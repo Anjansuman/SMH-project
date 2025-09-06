@@ -6,6 +6,7 @@ import { FaCopy } from "react-icons/fa";
 import { BiBlock } from "react-icons/bi";
 import { toast } from "sonner";
 import ToolTipComponent from "./TooltipComponent";
+import { useWebSocket } from "@/src/hooks/useWebSocket";
 
 interface FriendRequestModalProps {
     fromUser: {
@@ -14,17 +15,33 @@ interface FriendRequestModalProps {
         email: string,
         image: string,
         description?: string,
+        friendshipId: string,
     },
-    onAccept: () => void,
-    onReject: () => void,
-    onBlock: () => void,
 }
 
-export default function FriendRequestModal({ fromUser, onAccept, onReject, onBlock }: FriendRequestModalProps) {
+export default function FriendRequestModal({ fromUser }: FriendRequestModalProps) {
+
+    const { handleAcceptFriendRequest } = useWebSocket();
 
     async function copyId() {
         await navigator.clipboard.writeText(fromUser.id);
         toast.success('user id copied to clipboard');
+    }
+
+    function onAccept() {
+        const payload = {
+            userId: fromUser.id,
+            friendshipId: fromUser.friendshipId,
+        };
+        handleAcceptFriendRequest(payload);
+    }
+
+    function onReject() {
+
+    }
+
+    function onBlock() {
+
     }
 
     return (
@@ -66,7 +83,10 @@ export default function FriendRequestModal({ fromUser, onAccept, onReject, onBlo
                 </ToolTipComponent>
             </div>
             <div className="w-full flex justify-center items-center gap-x-3 text-xs ">
-                <div className="px-3 py-1.5 rounded-sm bg-green-500/30 border border-green-500/70 cursor-pointer hover:-translate-y-0.5 transition-transform ">
+                <div
+                    className="px-3 py-1.5 rounded-sm bg-green-500/30 border border-green-500/70 cursor-pointer hover:-translate-y-0.5 transition-transform "
+                    onClick={onAccept}
+                >
                     Accept
                 </div>
                 <div className="px-3 py-1.5 rounded-sm bg-red-500/30 border border-red-500/70 cursor-pointer hover:-translate-y-0.5 transition-transform ">

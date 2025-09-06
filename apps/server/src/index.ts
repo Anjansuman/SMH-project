@@ -4,6 +4,7 @@ import http from "http";
 import dotenv from "dotenv";
 import WebsocketServer from "./sockets/WebSocketServer";
 import router from "./routes/routes";
+import initServices from "./services/init-services";
 
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(
 
 app.use('/api/v1', router);
 
+initServices();
 new WebsocketServer(server);
 
 const PORT = 8080;

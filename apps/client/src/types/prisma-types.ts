@@ -61,7 +61,7 @@ export interface Room {
 export interface ChatMessage {
     id: string;
     message: string;
-    messateType: MessageType;
+    createdAt: Date;
 
     senderId: string;
     sender?: User;

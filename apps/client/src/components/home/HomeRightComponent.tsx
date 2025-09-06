@@ -4,9 +4,11 @@ import { useFeatureStore } from "@/src/store/featrues/useFeatureStore";
 import { FeatureEnum } from "@/src/types/FeatureEnum";
 import MessagingMainRenderer from "../Messaging/MessagingMainRenderer";
 import FriendsMainScreenRenderer from "../Friends/FriendsMainScreenRenderer";
+import useSubscribeEventHandler from "@/src/hooks/useSubscribeEventHandler";
 
 
 export default function HomeRightComponent() {
+    useSubscribeEventHandler();
     const { selectedFeature } = useFeatureStore();
 
     function currentFeature() {

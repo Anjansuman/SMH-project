@@ -35,9 +35,6 @@ export default function userAuthMiddleware(req: Request, res: Response, next: Ne
             return;
         }
 
-        console.log("secret: ", secret);
-        console.log("token: ", token);
-
         jwt.verify(token, secret, (err, decoded) => {
             if (err) {
                 res.status(401).json({ message: 'Not authorized' });

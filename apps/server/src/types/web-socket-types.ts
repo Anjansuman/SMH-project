@@ -5,6 +5,7 @@ export interface CustomWebSocket extends WebSocket {
     id: string;
     user: {
         id: string,
+        name: string,
     }
 }
 
@@ -25,6 +26,8 @@ export enum MESSAGE_TYPE {
 
     SEND_CHAT_MESSAGE = 'SEND_CHAT_MESSAGE',
 
-    SEND_MONEY_IN_CRYPTO = 'SEND_MONEY_IN_CRYPTO',
-    SEND_MONEY_IN_CASH = 'SEND_MONEY_IN_CASH',
+    SEND_FRIEND_REQUEST = 'SEND_FRIEND_REQUEST',
+    ACCEPT_FRIEND_REQUEST = 'ACCEPT_FRIEND_REQUEST',
+
+    SEND_CRYPTO = 'SEND_CRYPTO',
 }

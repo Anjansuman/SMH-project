@@ -47,6 +47,7 @@ model Friendship {
 
 model Room {
   id      String  @id @default(cuid())
+  name    String
   users   User[]  @relation("UserRooms")
   private Boolean
 
@@ -56,9 +57,11 @@ model Room {
 model ChatMessage {
   id          String      @id @default(cuid())
   message     String
-  messateType MessageType
+  createdAt   DateTime    @default(now())
+
   senderId    String
   sender      User        @relation(fields: [senderId], references: [id])
+
   roomId      String
   room        Room        @relation(fields: [roomId], references: [id])
 }
