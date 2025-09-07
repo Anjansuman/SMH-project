@@ -18,7 +18,6 @@ export default function userAuthMiddleware(req: Request, res: Response, next: Ne
         const token = authToken.split(' ')[1];
         const secret = process.env.JWT_SECRET;
 
-
         if (!token) {
             res.status(400).json({
                 success: false,

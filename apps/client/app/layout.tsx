@@ -6,6 +6,7 @@ import { authOptions } from "./api/auth/[...nextauth]/options";
 import SessionSetter from "../src/components/utility/SessionSetter";
 import { Toaster } from "sonner";
 import { NotificationComponent } from "@/src/components/utility/NotificationComponent";
+import Providers from './providers';
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -23,11 +24,13 @@ export default async function RootLayout({
     return (
         <html lang="en">
             <body className={geist.className}>
-                <NotificationComponent>
-                    {children}
-                    <Toaster theme="dark" />
-                    <SessionSetter session={session} />
-                </NotificationComponent>
+                <Providers>
+                    <NotificationComponent>
+                        {children}
+                        <Toaster theme="dark" />
+                        <SessionSetter session={session} />
+                    </NotificationComponent>
+                </Providers>
             </body>
         </html>
     );

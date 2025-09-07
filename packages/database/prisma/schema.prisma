@@ -43,6 +43,8 @@ model Friendship {
 
   receiverId String
   receiver   User   @relation("ReceivedFriendRequests", fields: [receiverId], references: [id])
+
+  chatMessages  ChatMessage[]
 }
 
 model Room {
@@ -62,8 +64,11 @@ model ChatMessage {
   senderId    String
   sender      User        @relation(fields: [senderId], references: [id])
 
-  roomId      String
-  room        Room        @relation(fields: [roomId], references: [id])
+  roomId      String?
+  room        Room?       @relation(fields: [roomId], references: [id])
+
+  friendshipId  String?
+  friendship  Friendship?   @relation(fields: [friendshipId], references: [id])
 }
 
 enum FriendshipStatus {

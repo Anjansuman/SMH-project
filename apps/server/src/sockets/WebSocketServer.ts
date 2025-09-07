@@ -66,7 +66,13 @@ export default class WebsocketServer {
 
     private validateConnection(ws: CustomWebSocket, req: any) {
         const url = new URL(req.url, `http://${req.headers.host}`);
-        const token = url.searchParams.get("token");
+        const authToken = url.searchParams.get("token");
+        if (!authToken) {
+            ws.close();
+            return;
+        }
+
+        const token = authToken.split(' ')[1];
         if (!token) {
             ws.close();
             return;
@@ -189,7 +195,7 @@ export default class WebsocketServer {
                     break;
 
                 case MESSAGE_TYPE.SEND_CRYPTO:
-                    // TODO: implement crypto send
+                    this.handleSendCrypto(ws, payload);
                     break;
 
                 default:
@@ -212,13 +218,12 @@ export default class WebsocketServer {
 
     private async handleSendMessage(ws: CustomWebSocket, payload: any) {
         try {
-            // ✅ Guard: ensure ws.user is set
             if (!ws.user) {
                 console.error("Attempted to send message without authenticated user");
                 return;
             }
 
-            const { roomId, message } = payload;
+            const { id, roomId, message } = payload;
             const user = await this.redisCache.getUser(ws.user.id);
 
             if (!user) {
@@ -226,22 +231,31 @@ export default class WebsocketServer {
                 return;
             }
 
+            const createdAt = new Date();
+
             const sendingMessage: SentMessageType = {
                 type: MESSAGE_TYPE.SEND_CHAT_MESSAGE,
                 payload: {
-                    roomId,
-                    message,
+                    roomId: roomId,
+                    id: id,
+                    message: message,
+                    createdAt: createdAt,
+                    senderId: ws.user.id,
                 },
             };
 
-            this.broadcastMessage(sendingMessage, roomId, ws.id);
+            this.broadcastMessage(
+                sendingMessage,
+                roomId,
+                ws.user.id,
+            );
 
             this.databaseQueue.createChatMessage(
-                ws.user.id,
+                id,
                 roomId,
                 ws.user.id,
                 message,
-                MessageType.MESSAGE
+                createdAt,
             );
         } catch (error) {
             console.error("Error in sending message: ", error);
@@ -339,6 +353,37 @@ export default class WebsocketServer {
         } catch (error) {
 
         }
+    }
+
+    private async handleSendCrypto(ws: CustomWebSocket, payload: any) {
+
+        const { id, amount } = payload;
+
+        if (!id || !amount) {
+            return;
+        }
+
+        const user = await this.redisCache.getUser(ws.user.id);
+
+        if (!user) {
+            console.error("User not available in cache");
+            return;
+        }
+
+        const receiver = this.userSocket.get(id);
+        if(!receiver) {
+            return;
+        }
+
+        const event_data: SentMessageType = {
+            type: MESSAGE_TYPE.SEND_CRYPTO,
+            payload: {
+                name: user.name,
+                amount: amount,
+            },
+        };
+
+        this.broadcastMessage(event_data, undefined, undefined, receiver);
     }
 
     private broadcastMessage(

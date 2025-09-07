@@ -3,13 +3,14 @@ import ToolTipComponent from "./TooltipComponent";
 import { toast } from "sonner";
 import { cn } from "@/src/lib/utils";
 import { useWebSocket } from "@/src/hooks/useWebSocket";
+import { notify } from "../ui/notification";
 
 interface UserCardModalProps {
     name: string;
     id: string;
     email: string;
     image: string;
-    walletAddress: string;
+    walletAddress?: string;
 }
 
 export default function UserCardModal({ name, id, email, image, walletAddress }: UserCardModalProps) {
@@ -22,7 +23,7 @@ export default function UserCardModal({ name, id, email, image, walletAddress }:
     }
 
     async function copyWalletAddress() {
-        await navigator.clipboard.writeText(walletAddress);
+        await navigator.clipboard.writeText(walletAddress!);
         toast.success('wallet address copied to clipboard')
     }
 
@@ -32,16 +33,6 @@ export default function UserCardModal({ name, id, email, image, walletAddress }:
         };
         handleSendFriendRequest(payload);
         toast.success("Friend request sent successfully!");
-    }
-
-    function sendCrypto() {
-        
-        // approve crypto payment from wallet
-        
-        const payload = {
-
-        };
-        
     }
 
     return (
@@ -104,7 +95,13 @@ export default function UserCardModal({ name, id, email, image, walletAddress }:
                 <div className="w-full flex justify-center items-center gap-x-3 mt-6">
                     <div
                         className="flex items-center justify-center px-5 py-1.5 rounded-md bg-[#2c2c2c] hover:bg-[#3c3c3c] transition-colors duration-200 ease-in-out border border-[#D8CFBC] text-[#D8CFBC] text-sm font-mono cursor-pointer"
-                        onClick={sendCrypto}
+                        onClick={() => {
+                            if (walletAddress !== '' && id) {
+                                notify().paymentSent(walletAddress, id);
+                            } else {
+                                toast.error(`${name} has not configured their wallet yet.`);
+                            }
+                        }}
                     >
                         Send Crypto
                     </div>

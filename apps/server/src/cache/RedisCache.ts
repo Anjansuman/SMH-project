@@ -31,6 +31,7 @@ export default class RedisCache {
             console.error("Error while setting user in cache: ", error);
         }
     }
+    
     public async updateUser(userId: string, user: Partial<User>) {
         try {
             const key = this.getUserKey(userId);

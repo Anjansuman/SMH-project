@@ -20,6 +20,16 @@ export default function useSubscribeEventHandler() {
             EventHandler.handleAcceptFriendRequest
         )
 
+        subscribeToHandler(
+            MESSAGE_TYPE.SEND_CHAT_MESSAGE,
+            EventHandler.handleChatMessage,
+        );
+
+        subscribeToHandler(
+            MESSAGE_TYPE.SEND_CRYPTO,
+            EventHandler.handleSendCrypto,
+        );
+
         return () => {
             unsubscribeToHandler(
                 MESSAGE_TYPE.SEND_FRIEND_REQUEST,
@@ -29,6 +39,16 @@ export default function useSubscribeEventHandler() {
             unsubscribeToHandler(
                 MESSAGE_TYPE.ACCEPT_FRIEND_REQUEST,
                 EventHandler.handleAcceptFriendRequest
+            );
+
+            unsubscribeToHandler(
+                MESSAGE_TYPE.SEND_CHAT_MESSAGE,
+                EventHandler.handleChatMessage,
+            );
+
+            unsubscribeToHandler(
+                MESSAGE_TYPE.SEND_CRYPTO,
+                EventHandler.handleSendCrypto,
             )
         }
 

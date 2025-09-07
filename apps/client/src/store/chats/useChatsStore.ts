@@ -1,45 +1,50 @@
 import { ChatMessage } from "@/src/types/prisma-types";
 import { create } from "zustand";
 
-// Minimal room type
-interface BaseRoom {
+interface Room {
     id: string;
     name: string;
+    image?: string | null;
+    email?: string | null;
+    walletAddress?: string | null;
+    friendId?: string | null;
 }
-
-// Friendship as room
-interface FriendRoom extends BaseRoom {
-    image?: string;
-    email?: string;
-    walletAddress?: string;
-}
-
-// Union of both
-type Room = BaseRoom | FriendRoom;
 
 interface ChatsStore {
-    roomChat: Record<string, ChatMessage[]>; // key = roomId / friendshipId
     rooms: Room[];
+    roomChat: Record<string, ChatMessage[]>; // key = roomId / friendshipId
+    currentRoom: Room | null;
 
-    // Chat actions
+    // Room functions
+    setRooms: (rooms: Room[]) => void;
+    appendRoom: (room: Room) => void;
+    clearRooms: () => void;
+    updateCurrentRoom: (room: Room) => void;
+
+    // Chat functions
     setMessages: (roomId: string, messages: ChatMessage[]) => void;
     appendMessage: (roomId: string, message: ChatMessage) => void;
-    clearRoomChat: (roomId: string) => void;
-    clearAllChats: () => void;
-
-    // Room actions
-    setRooms: (rooms: Room[]) => void;
-    addRoom: (room: Room) => void;
-    updateRoom: (roomId: string, updates: Partial<Room>) => void;
-    removeRoom: (roomId: string) => void;
-    clearRooms: () => void;
+    clearRoom: (roomId: string) => void;
+    clearAll: () => void;
 }
 
-export const useChatStore = create<ChatsStore>((set) => ({
-    roomChat: {},
+export const useChatsStore = create<ChatsStore>((set) => ({
     rooms: [],
+    roomChat: {},
+    currentRoom: null,
 
-    // Chat actions
+    // Room management
+    setRooms: (rooms) => set({ rooms }),
+    appendRoom: (room) =>
+        set((state) => ({
+            rooms: [...state.rooms, room],
+        })),
+    clearRooms: () => set({ rooms: [] }),
+    updateCurrentRoom: (room: Room) => set({
+        currentRoom: room,
+    }),
+
+    // Chat management
     setMessages: (roomId, messages) =>
         set((state) => ({
             roomChat: {
@@ -56,34 +61,12 @@ export const useChatStore = create<ChatsStore>((set) => ({
             },
         })),
 
-    clearRoomChat: (roomId) =>
+    clearRoom: (roomId) =>
         set((state) => {
             const newRoomChat = { ...state.roomChat };
             delete newRoomChat[roomId];
             return { roomChat: newRoomChat };
         }),
 
-    clearAllChats: () => set({ roomChat: {} }),
-
-    // Room actions
-    setRooms: (rooms) => set({ rooms }),
-
-    addRoom: (room) =>
-        set((state) => ({
-            rooms: [...state.rooms, room],
-        })),
-
-    updateRoom: (roomId, updates) =>
-        set((state) => ({
-            rooms: state.rooms.map((room) =>
-                room.id === roomId ? { ...room, ...updates } : room
-            ),
-        })),
-
-    removeRoom: (roomId) =>
-        set((state) => ({
-            rooms: state.rooms.filter((room) => room.id !== roomId),
-        })),
-
-    clearRooms: () => set({ rooms: [] }),
+    clearAll: () => set({ roomChat: {} }),
 }));

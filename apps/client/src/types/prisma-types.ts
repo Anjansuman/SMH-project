@@ -51,6 +51,7 @@ export interface Friendship {
 
 export interface Room {
     id: string;
+    name: string;
     private: boolean;
 
     // Relations

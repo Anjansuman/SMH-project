@@ -2,9 +2,10 @@
 
 import { cn } from '@/src/lib/utils';
 import NavItems from './NavItems';
-import { useUserSessionStore } from '../../store/user/useUserSessionStore';
-import Image from 'next/image';
 import NavbarProfile from './NavbarProfile';
+import { useState } from 'react';
+import { WalletPanel } from '../utility/WalletPanel';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const navItems = [
     { name: 'Features', link: '#features' },
@@ -14,7 +15,8 @@ const navItems = [
 
 export default function HomeNavbar() {
 
-    const { session } = useUserSessionStore();
+    const [walletPanel, setWalletPanel] = useState<boolean>(false);
+    const { publicKey } = useWallet();
 
     return (
         <div
@@ -35,8 +37,21 @@ export default function HomeNavbar() {
                     <NavItems items={navItems} />
                 </div>
 
-                <NavbarProfile />
+                <div className='flex items-center gap-x-3 select-none '>
+                    <div
+                        className='flex justify-center items-center px-4 py-2 rounded-lg hover:-translate-y-0.5 transition-transform bg-neutral-200 text-neutral-900 text-xs cursor-pointer'
+                        onClick={async () => {
+                            setWalletPanel(true)
+                        }}
+                    >
+                        {publicKey ? 'Wallet Connected' : 'Connect Wallet'}
+                    </div>
+                    <NavbarProfile />
+                </div>
             </div>
+            {walletPanel && (
+                <WalletPanel close={() => setWalletPanel(false)} />
+            )}
         </div>
     );
 }

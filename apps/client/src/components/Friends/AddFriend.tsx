@@ -72,7 +72,7 @@ export default function AddFriend() {
                         id={userData.id!}
                         email={userData.email!}
                         image={userData.image!}
-                        walletAddress={userData.walletAddress || ''}
+                        walletAddress={userData.walletAddress}
                     />
                 )}
             </div>

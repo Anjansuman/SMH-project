@@ -9,9 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@solana/wallet-adapter-backpack": "^0.1.14",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-phantom": "^0.9.28",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-solflare": "^0.6.32",
+    "@solana/wallet-adapter-wallets": "^0.19.37",
+    "@solana/web3.js": "^1.98.4",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
     "gsap": "^3.13.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.542.0",
     "motion": "^12.23.12",
     "next": "15.5.2",
@@ -20,6 +28,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
+    "react-select": "^5.10.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "zustand": "^5.0.8"
@@ -27,6 +37,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

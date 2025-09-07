@@ -11,8 +11,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import FriendRequestModal from "@/src/components/utility/FriendRequestModal";
+import SendCryptoModal from "../utility/SendCryptoModal";
 
-type NotificationType = "FRIEND_REQUEST" | "PAYMENT_RECEIVED" | "DEFAULT";
+type NotificationType = "FRIEND_REQUEST" | "PAYMENT_SENT" | "DEFAULT";
 
 type Notification = {
     id: number;
@@ -32,7 +33,7 @@ type NotificationContextType = {
                 friendshipId: string;
             }
         ) => void;
-        paymentReceived: (amount: number, fromUser: string) => void;
+        paymentSent: (walletAddress?: string, id?: string) => void;
         custom: (content: ReactNode) => void;
     };
 };
@@ -72,15 +73,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                 false // for now don't auto close the notification of friend request
             );
         },
-        paymentReceived: (amount, fromUser) => {
+        paymentSent: (walletAddress, id) => {
             addNotification(
-                "PAYMENT_RECEIVED",
-                <div className="p-4">
-                    <span>
-                        ✅ You received <strong>{amount} SOL</strong> from{" "}
-                        {fromUser}
-                    </span>
-                </div>
+                "PAYMENT_SENT",
+                <SendCryptoModal
+                    close={close}
+                    walletAddress={walletAddress}
+                    id={id}
+                />,
+                false
             );
         },
         custom: (content: ReactNode) => {
@@ -127,7 +128,7 @@ export function useNotification() {
     return ctx.notify;
 }
 
-export function notifyAnywhere() {
+export function notify() {
     if (!notifyRef) {
         throw new Error("NotificationProvider not mounted yet");
     }

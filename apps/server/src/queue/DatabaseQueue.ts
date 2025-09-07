@@ -3,13 +3,14 @@ import { JobOption, QueueJobTypes } from "../types/database-queue-type";
 import prisma, { FriendshipStatus, MessageType } from "@repo/db/client";
 import RedisCache from "../cache/RedisCache";
 import { redisCacheInstance } from "../services/init-services";
+import { connect } from "http2";
 
 interface CreateChatMessageJobType {
     id: string; // senderId
     roomId: string;
     senderId: string;
     message: string;
-    messageType: MessageType;
+    createdAt: Date;
 }
 
 interface CreateFriendshipJobType {
@@ -61,32 +62,61 @@ export default class DatabaseQueue {
         );
     }
 
-    private async createChatMessageProcessor(job: Bull.Job) {
-        try {
-            const { roomId, senderId, message, messageType }: CreateChatMessageJobType =
-                job.data;
+private async createChatMessageProcessor(job: Bull.Job) {
+    try {
+        const { id, roomId, senderId, message, createdAt }: CreateChatMessageJobType = job.data;
 
-            const createChatMessage = await prisma.chatMessage.create({
+
+        let createChatMessage;
+
+        const room = await prisma.room.findUnique({
+            where: { id: roomId },
+        });
+
+        if (room) {
+            createChatMessage = await prisma.chatMessage.create({
                 data: {
+                    id,
                     message,
-                    messateType: messageType, // ⚠️ double-check typo in schema
                     senderId,
                     roomId,
+                    createdAt,
                 },
             });
+        } else {
+            // 2. Try Friendship instead
+            const friendship = await prisma.friendship.findUnique({
+                where: { id: roomId },
+            });
 
-            return {
-                success: true,
-                chatMessage: createChatMessage,
-            };
-        } catch (error) {
-            console.error("Error while processing chat message create: ", error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : "Unknown error",
-            };
+            if (!friendship) {
+                throw new Error(`No Room or Friendship found with id ${roomId}`);
+            }
+
+            createChatMessage = await prisma.chatMessage.create({
+                data: {
+                    id,
+                    message,
+                    senderId,
+                    friendshipId: roomId,
+                    createdAt,
+                },
+            });
         }
+
+        return {
+            success: true,
+            chatMessage: createChatMessage,
+        };
+    } catch (error) {
+        console.error("Error while processing chat message create: ", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+        };
     }
+}
+
 
     private async createFriendShipProcessor(job: Bull.Job) {
         try {
@@ -125,7 +155,7 @@ export default class DatabaseQueue {
             const { id, senderId, receiverId, friendshipStatus }: UpdateFriendshipJobType =
                 job.data;
 
-            const updateFriendship = await prisma.friendship.updateMany({
+            const updateFriendship = await prisma.friendship.update({
                 where: {
                     id,
                     senderId,
@@ -138,7 +168,7 @@ export default class DatabaseQueue {
 
             return {
                 success: true,
-                updatedCount: updateFriendship.count,
+                updatedCount: updateFriendship,
             };
         } catch (error) {
             console.error("Error while processing friendship update: ", error);
@@ -154,13 +184,13 @@ export default class DatabaseQueue {
         roomId: string,
         senderId: string,
         message: string,
-        messageType: MessageType,
+        createdAt: Date,
         options?: Partial<JobOption>,
     ) {
         return await this.databaseQueue
             .add(
                 QueueJobTypes.CREATE_CHAT_MESSAGE,
-                { id, roomId, senderId, message, messageType },
+                { id, roomId, senderId, message, createdAt },
                 { ...this.defaultJobOptions, ...options },
             )
             .catch((error) =>

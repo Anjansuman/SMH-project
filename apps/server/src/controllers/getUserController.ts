@@ -38,20 +38,17 @@ export default async function getUserController(req: Request, res: Response) {
         const friendships = await prisma.friendship.findMany({
             where: {
                 status: "ACCEPTED",
-                OR: [
-                    { senderId: userId },
-                    { receiverId: userId },
-                ],
+                OR: [{ senderId: userId }, { receiverId: userId }],
             },
             select: {
-                id: true,
+                id: true, // keep friendshipId
                 sender: {
                     select: {
                         id: true,
                         name: true,
                         email: true,
                         image: true,
-                        walletAddress: true
+                        walletAddress: true,
                     },
                 },
                 receiver: {
@@ -66,10 +63,13 @@ export default async function getUserController(req: Request, res: Response) {
             },
         });
 
-        // Extract the "other user" from each friendship
-        const friends = friendships.map((f) =>
-            f.sender.id === userId ? f.receiver : f.sender
-        );
+        const friends = friendships.map((f) => {
+            const otherUser = f.sender.id === userId ? f.receiver : f.sender;
+            return {
+                friendshipId: f.id,
+                ...otherUser,
+            };
+        });
 
         res.status(200).json({
             success: true,
