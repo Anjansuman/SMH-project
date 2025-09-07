@@ -23,7 +23,7 @@ export default function MessagingRightPanel() {
         const loadMessages = async () => {
             try {
                 setLoading(true);
-                const messages = await getUserChats(currentRoom.id, session?.user.token!);
+                const messages = await getUserChats(currentRoom.id, session?.user.token || '');
                 setMessages(currentRoom.id, messages); // store in Zustand
             } catch (err) {
                 console.error("Failed to load messages:", err);

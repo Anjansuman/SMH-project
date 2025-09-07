@@ -5,7 +5,7 @@ import { FeatureEnum } from "@/src/types/FeatureEnum";
 import MessagingMainRenderer from "../Messaging/MessagingMainRenderer";
 import FriendsMainScreenRenderer from "../Friends/FriendsMainScreenRenderer";
 import useSubscribeEventHandler from "@/src/hooks/useSubscribeEventHandler";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useChatsStore } from "@/src/store/chats/useChatsStore";
 import { useUserSessionStore } from "@/src/store/user/useUserSessionStore";
 import axios from "axios";
@@ -35,12 +35,19 @@ export default function HomeRightComponent() {
 
                 const { data } = response.data;
 
-                const userRooms = (data.Rooms || []).map((room: any) => ({
+                const userRooms = (data.Rooms || []).map((room: { id: string, name: string }) => ({
                     id: room.id,
                     name: room.name,
                 }));
 
-                const friendRooms = (data.friends || []).map((friend: any) => ({
+                const friendRooms = (data.friends || []).map((friend: {
+                    friendshipId: string,
+                    name: string,
+                    image: string,
+                    email: string,
+                    walletAddress: string,
+                    id: string,
+                }) => ({
                     id: friend.friendshipId,
                     name: friend.name,
                     image: friend.image,

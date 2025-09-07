@@ -32,7 +32,7 @@ export default function MessageRenderer() {
                     <MessageBubble
                         key={message.id}
                         chatMessage={message}
-                        currentUserId={session?.user.id!}
+                        currentUserId={session?.user.id || ''}
                     />
                 ))
             ) : (
