@@ -15,7 +15,7 @@ interface ProfileCardProps {
     copyText?: string;
 }
 
-export default function ProfileCard({ className, variant = 'ghost', name, image, id, email, onClick, copyText }: ProfileCardProps) {
+export default function ProfileCard({ className, variant = 'ghost', name, image, id, email, onClick }: ProfileCardProps) {
 
     async function copyId() {
         await navigator.clipboard.writeText(id);

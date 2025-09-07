@@ -36,13 +36,13 @@ export default function FriendRequestModal({ fromUser }: FriendRequestModalProps
         handleAcceptFriendRequest(payload);
     }
 
-    function onReject() {
+    // function onReject() {
 
-    }
+    // }
 
-    function onBlock() {
+    // function onBlock() {
 
-    }
+    // }
 
     return (
         <div className="text-neutral-200 flex flex-col gap-y-5 ">

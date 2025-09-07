@@ -5,7 +5,7 @@ import { useUserSessionStore } from "../../store/user/useUserSessionStore";
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/src/lib/utils";
 import { RxExit } from "react-icons/rx";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import LogoutModal from "../utility/LogoutModal";
 
 

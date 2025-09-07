@@ -1,20 +1,39 @@
-"use client";
-
-import { useState, KeyboardEvent } from "react";
+import { useState, useEffect, KeyboardEvent } from "react";
 import { cn } from "@/src/lib/utils";
 import CurrentMessagingRoom from "./CurrentMessagingRoom";
 import MessageRenderer from "./MessageRenderer";
 import { useChatsStore } from "@/src/store/chats/useChatsStore";
 import { useUserSessionStore } from "@/src/store/user/useUserSessionStore";
-import { ChatMessage } from "@/src/types/prisma-types";
 import { ChevronRight } from "lucide-react";
 import { useWebSocket } from "@/src/hooks/useWebSocket";
+import getUserChats from "@/src/backend/get-user-chats";
+
 
 export default function MessagingRightPanel() {
-    const { currentRoom, appendMessage } = useChatsStore();
+    const { currentRoom, appendMessage, setMessages } = useChatsStore();
     const { session } = useUserSessionStore();
     const [messageText, setMessageText] = useState("");
+    const [loading, setLoading] = useState(false);
     const { handleSendChatMessage } = useWebSocket();
+
+    // Fetch messages whenever room changes
+    useEffect(() => {
+        if (!currentRoom) return;
+
+        const loadMessages = async () => {
+            try {
+                setLoading(true);
+                const messages = await getUserChats(currentRoom.id, session?.user.token || '');
+                setMessages(currentRoom.id, messages); // store in Zustand
+            } catch (err) {
+                console.error("Failed to load messages:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadMessages();
+    }, [currentRoom]);
 
     const sendMessage = () => {
         if (!messageText.trim() || !currentRoom) return;
@@ -33,12 +52,12 @@ export default function MessagingRightPanel() {
             roomId: payload.roomId,
             message: payload.message,
         });
+
+        appendMessage(currentRoom.id, payload); // update local state
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            sendMessage();
-        }
+        if (e.key === "Enter") sendMessage();
     };
 
     return (
@@ -46,7 +65,11 @@ export default function MessagingRightPanel() {
             <CurrentMessagingRoom />
 
             <div className="flex-1 overflow-y-auto px-3 py-2">
-                <MessageRenderer />
+                {loading ? (
+                    <div className="text-neutral-500 text-center mt-4">Loading messages...</div>
+                ) : (
+                    <MessageRenderer />
+                )}
             </div>
 
             <div className="w-full h-16 px-3 py-2 border-t border-neutral-800 flex items-center relative">

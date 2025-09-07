@@ -17,7 +17,7 @@ export default class EventHandler {
 
         const { session } = useUserSessionStore.getState();
 
-        if(chatMessagePayload.id === session?.user.id) return;
+        if(chatMessagePayload.senderId === session?.user.id) return;
 
         const { appendMessage } = useChatsStore.getState();
         appendMessage(chatMessagePayload.roomId, {
