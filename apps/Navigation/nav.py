@@ -19,27 +19,17 @@ app.add_middleware(
 ORS_API_KEY = os.getenv("ORS_API_KEY")
 
 class RouteRequest(BaseModel):
-    source: list  # [lat, lon]
-    destination: list  # [lat, lon]from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import requests, math, os
+    source: str        # Place name (e.g., "Delhi")
+    destination: str   # Place name (e.g., "Mumbai")
 
-app = FastAPI()
-
-# Allow frontend access
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-ORS_API_KEY = os.getenv("ORS_API_KEY")
-
-class RouteRequest(BaseModel):
-    source: list  # [lat, lon]
-    destination: list  # [lat, lon]
+# Helper: Geocode using Nominatim
+def geocode(place: str):
+    url = f"https://nominatim.openstreetmap.org/search?q={place}&format=json&limit=1"
+    res = requests.get(url, headers={"User-Agent": "nav-app"})
+    data = res.json()
+    if data:
+        return float(data[0]["lat"]), float(data[0]["lon"])
+    return None
 
 # Haversine fallback
 def haversine(lat1, lon1, lat2, lon2):
@@ -52,19 +42,21 @@ def haversine(lat1, lon1, lat2, lon2):
 
 @app.post("/api/route")
 async def get_route(data: RouteRequest):
-    src_lat, src_lon = data.source
-    dst_lat, dst_lon = data.destination
+    src = geocode(data.source)
+    dst = geocode(data.destination)
+
+    if not src or not dst:
+        return {"error": "Could not geocode one of the locations."}
+
+    src_lat, src_lon = src
+    dst_lat, dst_lon = dst
 
     # --- Try OpenRouteService ---
     if ORS_API_KEY:
         try:
             url = "https://api.openrouteservice.org/v2/directions/driving-car"
             headers = {"Authorization": ORS_API_KEY, "Content-Type": "application/json"}
-            body = {
-                "coordinates": [[src_lon, src_lat], [dst_lon, dst_lat]],
-                "instructions": False,
-                "geometry_simplify": False
-            }
+            body = {"coordinates": [[src_lon, src_lat], [dst_lon, dst_lat]]}
             resp = requests.post(url, json=body, headers=headers, timeout=15)
             route = resp.json()
 
@@ -75,7 +67,7 @@ async def get_route(data: RouteRequest):
         except Exception as e:
             print("ORS Exception:", e)
 
-    # --- Try OSRM public server ---
+    # --- Try OSRM ---
     try:
         url = f"http://router.project-osrm.org/route/v1/driving/{src_lon},{src_lat};{dst_lon},{dst_lat}?overview=full&geometries=geojson"
         resp = requests.get(url, timeout=15)
@@ -87,10 +79,6 @@ async def get_route(data: RouteRequest):
     except Exception as e:
         print("OSRM Exception:", e)
 
-    # --- Fallback to straight line (Haversine) ---
+    # --- Fallback to straight line ---
     distance_km = haversine(src_lat, src_lon, dst_lat, dst_lon)
-    return {
-        "distance_km": distance_km,
-        "route_coords": [[src_lon, src_lat], [dst_lon, dst_lat]],  # straight line
-    }
-
+    return {"distance_km": distance_km, "route_coords": [[src_lon, src_lat], [dst_lon, dst_lat]]}
