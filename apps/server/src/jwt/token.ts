@@ -21,7 +21,7 @@ export default class token {
                 id: id,
             }
 
-            const token = jwt.sign(jwtPayload, secret);
+            const token = 'Bearer ' + jwt.sign(jwtPayload, secret);
             return {
                 success: true,
                 cause: 'token validated',

@@ -2,21 +2,21 @@ import WebSocketClient from "../socket/socket";
 
 
 let client: WebSocketClient | null = null;
-let currentUserId: string | null = null;
+let currentUserToken: string | null = null;
 
-export function getWebSocketClient(userId: string) {
+export function getWebSocketClient(token: string) {
 
-    if(client && currentUserId === userId) {
+    if(client && currentUserToken === token) {
         return client;
     }
 
-    if(client && currentUserId !== userId) {
+    if(client && currentUserToken !== token) {
         client.close();
         client = null;
     }
 
-    client = new WebSocketClient(`ws://localhost:8080/ws?userId=${userId}`);
-    currentUserId = userId;
+    client = new WebSocketClient(`ws://localhost:8080/ws?token=${token}`);
+    currentUserToken = token;
 
     return client;
 }
@@ -26,9 +26,9 @@ export function cleanWebSocketClient() {
         client.close();
     }
     client = null;
-    currentUserId = null;
+    currentUserToken = null;
 }
 
-export function getCurrentUserId() {
-    return currentUserId;
+export function getcurrentUserToken() {
+    return currentUserToken;
 }

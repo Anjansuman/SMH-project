@@ -9,7 +9,7 @@ export default async function getUserData(userId: string, token: string) {
             `${GET_USER_WITH_ID}/${userId}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `${token}`,
                 },
             },
         );

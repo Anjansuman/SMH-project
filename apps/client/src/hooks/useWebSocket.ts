@@ -13,22 +13,22 @@ export const useWebSocket = () => {
 
     useEffect(() => {
 
-        if(!session || !session.user || !session.user.id) {
+        if(!session || !session.user || !session.user.token) {
             return;
         }
 
-        const userId = session.user.id;
+        const token = session.user.token;
 
-        if(lastUserIdRef.current === userId) {
-            socket.current = getWebSocketClient(userId);
+        if(lastUserIdRef.current === token) {
+            socket.current = getWebSocketClient(token);
             return;
         }
 
-        lastUserIdRef.current = userId;
-        socket.current = getWebSocketClient(userId);
+        lastUserIdRef.current = token;
+        socket.current = getWebSocketClient(token);
 
         return () => {
-            if(lastUserIdRef.current !== userId) {
+            if(lastUserIdRef.current !== token) {
                 cleanWebSocketClient();
                 socket.current = null;
             }
@@ -62,12 +62,47 @@ export const useWebSocket = () => {
         }
     }
 
+    function handleSendFriendRequest(payload: unknown) {
+        const message: MessagePayload = {
+            type: MESSAGE_TYPE.SEND_FRIEND_REQUEST,
+            payload: payload,
+        };
+
+
+        if(socket.current) {
+            socket.current.send_message(message);
+        }
+    }
+
+    function handleSendCrypto(payload: unknown) {
+        const message: MessagePayload = {
+            type: MESSAGE_TYPE.SEND_CRYPTO,
+            payload: payload,
+        };
+        if(socket.current) {
+            socket.current.send_message(message);
+        }
+    }
+
+    function handleAcceptFriendRequest(payload: unknown) {
+        const message: MessagePayload = {
+            type: MESSAGE_TYPE.ACCEPT_FRIEND_REQUEST,
+            payload: payload,
+        };
+        if(socket.current) {
+            socket.current.send_message(message);
+        }
+    }
+
     return {
         socket: socket.current,
         isConnected: socket.current?.is_connected || false,
         subscribeToHandler,
         unsubscribeToHandler,
         handleSendChatMessage,
+        handleSendFriendRequest,
+        handleSendCrypto,
+        handleAcceptFriendRequest,
     }
 
 }

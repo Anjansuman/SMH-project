@@ -19,7 +19,7 @@ export default class RedisCache {
         user: Partial<User>,
     ) {
         try {
-            
+
             const key = this.getUserKey(userId);
             await this.redisCache.hset(key, userId, JSON.stringify(user));
 
@@ -31,10 +31,27 @@ export default class RedisCache {
             console.error("Error while setting user in cache: ", error);
         }
     }
+    
+    public async updateUser(userId: string, user: Partial<User>) {
+        try {
+            const key = this.getUserKey(userId);
+
+            const existingData = await this.redisCache.hget(key, userId);
+            const existingUser = existingData ? JSON.parse(existingData) : {};
+
+            const updatedUser = { ...existingUser, ...user };
+
+            await this.redisCache.hset(key, userId, JSON.stringify(updatedUser));
+
+            return updatedUser;
+        } catch (error) {
+            console.error("Error while updating user in cache: ", error);
+        }
+    }
 
     public async getUser(userId: string) {
         try {
-            
+
             const key = this.getUserKey(userId);
             const data = await this.redisCache.hget(key, userId);
             return data ? JSON.parse(data) : null;

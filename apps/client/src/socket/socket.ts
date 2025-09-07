@@ -58,7 +58,6 @@ export default class WebSocketClient {
 
         this.ws.onclose = (event: CloseEvent) => {
             this.is_connected = false;
-
             if (this.reconnect_timeout) {
                 clearTimeout(this.reconnect_timeout);
                 this.reconnect_timeout = null;

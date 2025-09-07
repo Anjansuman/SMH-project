@@ -13,6 +13,7 @@ import ToolTipComponent from "../utility/TooltipComponent";
 import { useFeatureStore } from "@/src/store/featrues/useFeatureStore";
 import { FeatureEnum } from "@/src/types/FeatureEnum";
 import { useUserSessionStore } from "@/src/store/user/useUserSessionStore";
+import { notify } from "../ui/notification";
 
 export default function SidePanel() {
     const [collapsed, setCollapsed] = useState(false);
@@ -37,11 +38,9 @@ export default function SidePanel() {
         if (!panelRef.current) return;
 
         if (!collapsed) {
-            // collapse
             gsap.to(panelRef.current, { width: "5.5rem", duration: 0.3, ease: "power2.inOut" });
             gsap.to(textRefs.current, { opacity: 0, duration: 0.2, stagger: 0.05 });
         } else {
-            // expand
             gsap.to(panelRef.current, { width: "25rem", duration: 0.3, ease: "power2.inOut" });
             gsap.to(textRefs.current, { opacity: 1, duration: 0.2, stagger: 0.05, delay: 0.1 });
         }
@@ -49,56 +48,58 @@ export default function SidePanel() {
     };
 
     return (
-        <div
-            ref={panelRef}
-            className={cn(
-                "w-[25rem] bg-black h-screen rounded-r-xl border-r border-neutral-700",
-                "flex flex-col justify-between items-center",
-                "px-5 py-10 overflow-hidden"
-            )}
-        >
-            <div className="w-full flex flex-col gap-y-2 ">
-                <div className="w-full flex justify-end cursor-pointer" onClick={togglePanel}>
-                    <MdOutlineSegment size={30} />
+        <>
+            <div
+                ref={panelRef}
+                className={cn(
+                    "w-[25rem] bg-black h-screen rounded-r-xl border-r border-neutral-700",
+                    "flex flex-col justify-between items-center",
+                    "px-5 py-10 overflow-hidden"
+                )}
+            >
+                <div className="w-full flex flex-col gap-y-2 ">
+                    <div className="w-full flex justify-end cursor-pointer" onClick={togglePanel}>
+                        <MdOutlineSegment size={30} />
+                    </div>
+                    <ProfileCard
+                        name={session?.user.name || ""}
+                        email={session?.user.email || ""}
+                        id={session?.user.id || ""}
+                        image={session?.user.image || ""}
+                    />
                 </div>
-                <ProfileCard
-                    name={session?.user.name || ''}
-                    email={session?.user.email || ''}
-                    id={session?.user.id || ''}
-                    image={session?.user.image || ''}
-                />
+
+                <div className="w-full flex flex-col gap-y-2">
+                    {sideBarTop.map((e, index) => (
+                        <SideButton
+                            key={index}
+                            name={e.name}
+                            icon={e.icon}
+                            type={e.type}
+                            textRef={(el) => {
+                                if (el) textRefs.current[index] = el;
+                            }}
+                            collapsed={!collapsed}
+                        />
+                    ))}
+                </div>
+
+                <div className="w-full">
+                    {sideBarBottom.map((e, index) => (
+                        <SideButton
+                            key={index + sideBarTop.length}
+                            name={e.name}
+                            icon={e.icon}
+                            type={e.type}
+                            textRef={(el) => {
+                                if (el) textRefs.current[index + sideBarTop.length] = el;
+                            }}
+                            collapsed={!collapsed}
+                        />
+                    ))}
+                </div>
             </div>
-            <div className="w-full flex flex-col gap-y-2">
-                {sideBarTop.map((e, index) => (
-                    <SideButton
-                        key={index}
-                        name={e.name}
-                        icon={e.icon}
-                        type={e.type}
-                        onClick={togglePanel}
-                        textRef={(el) => {
-                            if (el) textRefs.current[index] = el;
-                        }}
-                        collapsed={!collapsed}
-                    />
-                ))}
-            </div>
-            <div className="w-full">
-                {sideBarBottom.map((e, index) => (
-                    <SideButton
-                        key={index + sideBarTop.length}
-                        name={e.name}
-                        icon={e.icon}
-                        type={e.type}
-                        onClick={togglePanel}
-                        textRef={(el) => {
-                            if (el) textRefs.current[index + sideBarTop.length] = el;
-                        }}
-                        collapsed={!collapsed}
-                    />
-                ))}
-            </div>
-        </div>
+        </>
     );
 }
 
@@ -112,20 +113,26 @@ interface SideButtonProps {
 }
 
 function SideButton({ name, icon, type, onClick, textRef, collapsed }: SideButtonProps) {
-
     const { updateSeletedFeature } = useFeatureStore();
 
+    const handleClick = () => {
+        if (name === "Send crypto") {
+            notify().paymentSent();
+        } else {
+            updateSeletedFeature(type);
+        }
+
+        if (onClick) onClick();
+    };
+
     return (
-        <ToolTipComponent content={name} >
+        <ToolTipComponent content={name}>
             <div
                 className={cn(
                     "flex justify-start items-center gap-x-2 px-4 py-2 rounded-md hover:bg-neutral-900 text-neutral-200",
-                    "cursor-pointer"
+                    "cursor-pointer "
                 )}
-                onClick={() => {
-                    updateSeletedFeature(type);
-                    onClick;
-                }}
+                onClick={handleClick}
             >
                 <div>{icon}</div>
                 {collapsed && (

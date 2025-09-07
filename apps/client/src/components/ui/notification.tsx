@@ -11,8 +11,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import FriendRequestModal from "@/src/components/utility/FriendRequestModal";
+import SendCryptoModal from "../utility/SendCryptoModal";
 
-type NotificationType = "FRIEND_REQUEST" | "PAYMENT_RECEIVED" | "DEFAULT";
+type NotificationType = "FRIEND_REQUEST" | "PAYMENT_SENT" | "DEFAULT";
 
 type Notification = {
     id: number;
@@ -29,14 +30,10 @@ type NotificationContextType = {
                 email: string;
                 image: string;
                 description?: string;
-            },
-            handlers: {
-                onAccept: () => void;
-                onReject: () => void;
-                onBlock: () => void;
+                friendshipId: string;
             }
         ) => void;
-        paymentReceived: (amount: number, fromUser: string) => void;
+        paymentSent: (walletAddress?: string, id?: string) => void;
         custom: (content: ReactNode) => void;
     };
 };
@@ -44,6 +41,7 @@ type NotificationContextType = {
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
 let idCounter = 0;
+let notifyRef: NotificationContextType["notify"] | null = null; // ✅ global reference
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -57,7 +55,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             const id = ++idCounter;
             setNotifications((prev) => {
                 const next = [{ id, type, content }, ...prev];
-                return next.slice(0, 3);
+                return next.slice(0, 3); // ✅ limit to 3 stacked
             });
 
             if (autoClose) {
@@ -67,50 +65,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         [removeNotification]
     );
 
-
-    const notify = {
-        friendRequest: (
-            fromUser: {
-                id: string;
-                name: string;
-                email: string;
-                image: string;
-                description?: string;
-            },
-            handlers: {
-                onAccept: () => void;
-                onReject: () => void;
-                onBlock: () => void;
-            }
-        ) => {
+    const notify: NotificationContextType["notify"] = {
+        friendRequest: (fromUser) => {
             addNotification(
                 "FRIEND_REQUEST",
-                <FriendRequestModal
-                    fromUser={fromUser}
-                    onAccept={() => {
-                        handlers.onAccept();
-                        removeNotification(idCounter); // close after action
-                    }}
-                    onReject={() => {
-                        handlers.onReject();
-                        removeNotification(idCounter);
-                    }}
-                    onBlock={() => {
-                        handlers.onBlock();
-                        removeNotification(idCounter);
-                    }}
-                />,
-                false // don’t autoclose friend requests, user must act
+                <FriendRequestModal fromUser={fromUser} />,
+                false // for now don't auto close the notification of friend request
             );
         },
-        paymentReceived: (amount: number, fromUser: string) => {
+        paymentSent: (walletAddress, id) => {
             addNotification(
-                "PAYMENT_RECEIVED",
-                <div className="p-4">
-                    <span>
-                        ✅ You received <strong>{amount} SOL</strong> from {fromUser}
-                    </span>
-                </div>
+                "PAYMENT_SENT",
+                <SendCryptoModal
+                    close={close}
+                    walletAddress={walletAddress}
+                    id={id}
+                />,
+                false
             );
         },
         custom: (content: ReactNode) => {
@@ -118,18 +89,19 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         },
     };
 
+    notifyRef = notify;
+
     return (
         <NotificationContext.Provider value={{ notify }}>
             {children}
-            <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-4 w-80 select-none">
+            <div className="fixed bottom-6 right-6 z-[9999] flex flex-col-reverse gap-4 w-80 select-none">
                 <AnimatePresence>
-                    {notifications.map((n, i) => (
+                    {notifications.map((n) => (
                         <motion.div
                             key={n.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            style={{ zIndex: 9999 + i }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
                             className="relative p-6 rounded-xl border border-neutral-700 bg-black text-neutral-200 flex flex-col gap-y-5 shadow-lg"
                         >
                             {n.content}
@@ -143,13 +115,22 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                     ))}
                 </AnimatePresence>
             </div>
-
         </NotificationContext.Provider>
     );
 }
 
 export function useNotification() {
     const ctx = useContext(NotificationContext);
-    if (!ctx) throw new Error("useNotification must be used inside NotificationProvider");
+    if (!ctx)
+        throw new Error(
+            "useNotification must be used inside NotificationProvider"
+        );
     return ctx.notify;
+}
+
+export function notify() {
+    if (!notifyRef) {
+        throw new Error("NotificationProvider not mounted yet");
+    }
+    return notifyRef;
 }

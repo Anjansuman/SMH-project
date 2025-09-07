@@ -2,13 +2,12 @@ import HomeRightComponent from "@/src/components/home/HomeRightComponent";
 import SidePanel from "@/src/components/home/SidePanel";
 import HomeNavbar from "@/src/components/navbars/HomeNavbar";
 
-
-export default function Home() {
+export default async function Home() {
     return (
-        <div className="h-full w-full flex ">
+        <div className="h-screen w-screen flex overflow-hidden">
             <HomeNavbar />
             <SidePanel />
-            <div className="w-full text-neutral-200 pt-30 ">
+            <div className="flex-1 text-neutral-200 pt-30">
                 <HomeRightComponent />
             </div>
         </div>
