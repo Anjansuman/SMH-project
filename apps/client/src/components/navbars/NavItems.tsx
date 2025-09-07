@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/src/lib/utils';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 interface NavItemsProps {

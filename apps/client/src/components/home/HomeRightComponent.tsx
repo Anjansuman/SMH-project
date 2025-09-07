@@ -11,6 +11,7 @@ import { useUserSessionStore } from "@/src/store/user/useUserSessionStore";
 import axios from "axios";
 import { GET_LOGGED_IN_USER_DATA } from "@/src/routes/routes";
 import Navigation from "../Navigation/Navigation";
+import { BackgroundBeams } from "../ui/background-beams";
 
 export default function HomeRightComponent() {
     useSubscribeEventHandler();
@@ -88,7 +89,7 @@ export default function HomeRightComponent() {
 
             case FeatureEnum.NONE:
             default:
-                return <div>Select a feature from the sidebar</div>;
+                return <BackgroundBeams />;
         }
     }
 

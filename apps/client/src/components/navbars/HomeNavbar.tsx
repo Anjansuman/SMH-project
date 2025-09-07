@@ -20,7 +20,7 @@ export default function HomeNavbar() {
 
     return (
         <div
-            className={cn('fixed left-1/2 -translate-x-1/2 px-4 py-4 z-[100',
+            className={cn('fixed left-1/2 -translate-x-1/2 px-4 py-4 z-[100]',
                 'transition-all duration-500 ease-in-out rounded-2xl',
                 'top-4 border border-neutral-600 shadow-lg bg-gradient-to-b from-[#1c1c1c] via-neutral-900/90 to-[#1c1c1c] backdrop-blur-sm '
             )}

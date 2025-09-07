@@ -54,7 +54,8 @@ export default function SidePanel() {
                 className={cn(
                     "w-[25rem] bg-black h-screen rounded-r-xl border-r border-neutral-700",
                     "flex flex-col justify-between items-center",
-                    "px-5 py-10 overflow-hidden"
+                    "px-5 py-10 overflow-hidden",
+                    'relative z-50'
                 )}
             >
                 <div className="w-full flex flex-col gap-y-2 ">
