@@ -1,7 +1,7 @@
 langchain
 python-dotenv
 langchain_community
-langserve
+langserve 
 fastapi
 uvicorn
 langchain-ollama
