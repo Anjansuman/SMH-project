@@ -31,7 +31,7 @@ export default function HomeNavbar() {
             }}
         >
             <div className="px-4 flex items-center justify-between w-full">
-                Hashed
+                UniLink
 
                 <div className="flex">
                     <NavItems items={navItems} />
